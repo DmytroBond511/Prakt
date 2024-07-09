@@ -1,1 +1,41 @@
+#include <stdio.h>
 
+
+long long count_numbers(int p) {
+    if (p == 1) return 2; //  5, 9
+    if (p == 2) return 4; // 55, 59, 95, 99
+
+
+    long long dp0[31] = {0}, dp1[31] = {0};
+
+
+    dp0[1] = 2; // 5, 9
+    dp1[2] = 2; // 55, 99
+    dp0[2] = 2; // 59, 95
+
+
+    for (int i = 3; i <= p; ++i) {
+        dp0[i] = dp0[i-1] + dp1[i-1]; 
+        dp1[i] = dp0[i-1];            
+
+    return dp0[p] + dp1[p]; 
+}
+
+int main() {
+    int p;
+    
+
+    printf("Введіть кількість розрядів p (p ≤ 30): ");
+    scanf("%d", &p);
+    
+
+    if (p <= 0 || p > 30) {
+        printf("Помилка: кількість розрядів повинна бути в діапазоні від 1 до 30.\n");
+        return 1;
+    }
+    
+
+    printf("Кількість чисел із %d розрядів: %lld\n", p, count_numbers(p));
+    
+    return 0;
+}
