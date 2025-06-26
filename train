@@ -1,0 +1,244 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct Account {
+    string username;
+    string password;
+    string name;
+    string email;
+    string phone;
+    bool loggedIn = false;
+};
+
+class Train {
+private:
+    string destination;
+    int trainNumber;
+    int totalSeats;
+    int passengers;
+    int freeSeats;
+
+public:
+    Train(string dest, int num, int seats, int pass) {
+        destination = dest;
+        trainNumber = num;
+        totalSeats = seats;
+        passengers = pass;
+        calculateFreeSeats();
+    }
+
+    void calculateFreeSeats() {
+        freeSeats = totalSeats - passengers;
+    }
+
+    string getDestination() const { return destination; }
+    int getTrainNumber() const { return trainNumber; }
+    int getFreeSeats() const { return freeSeats; }
+
+    bool bookSeats(int count) {
+        if (count <= freeSeats) {
+            passengers += count;
+            calculateFreeSeats();
+            return true;
+        }
+        return false;
+    }
+
+    friend ostream& operator<<(ostream& os, const Train& train) {
+        os << "Пункт призначення: " << train.destination << "\n"
+           << "Номер потягу: " << train.trainNumber << "\n"
+           << "Вільні місця: " << train.freeSeats << "\n";
+        return os;
+    }
+};
+
+class TrainManager {
+private:
+    vector<Train> trains;
+
+public:
+    TrainManager() {
+        trains.emplace_back("Київ", 101, 100, 75);
+        trains.emplace_back("Львів", 202, 80, 60);
+        trains.emplace_back("Одеса", 303, 90, 90);
+        trains.emplace_back("Харків", 404, 120, 100);
+        trains.emplace_back("Дніпро", 505, 110, 85);
+    }
+
+    void displayAllTrains() {
+        cout << "\n--- Всі доступні потяги ---\n";
+        for (const auto& train : trains) {
+            cout << train << "-------------------\n";
+        }
+    }
+
+    void displayAvailableTrains() {
+        cout << "\n--- Потяги з вільними місцями ---\n";
+        for (const auto& train : trains) {
+            if (train.getFreeSeats() > 0) {
+                cout << train << "-------------------\n";
+            }
+        }
+    }
+
+    void searchTrainByDestination(const string& target) {
+        cout << "\n--- Результати пошуку: " << target << " ---\n";
+        bool found = false;
+        for (const auto& train : trains) {
+            if (train.getDestination() == target) {
+                cout << train << "-------------------\n";
+                found = true;
+            }
+        }
+        if (!found) {
+            cout << "Нічого не знайдено.\n";
+        }
+    }
+
+    void bookTrain(const string& dest) {
+        vector<int> matches;
+        for (int i = 0; i < trains.size(); ++i) {
+            if (trains[i].getDestination() == dest && trains[i].getFreeSeats() > 0) {
+                cout << trains[i] << "-------------------\n";
+                matches.push_back(i);
+            }
+        }
+
+        if (matches.empty()) {
+            cout << "Немає доступних потягів за цим напрямком.\n";
+            return;
+        }
+
+        int num, seatCount;
+        cout << "Введіть номер потягу для бронювання: ";
+        cin >> num;
+        cout << "Скільки місць бажаєте забронювати? ";
+        cin >> seatCount;
+        cin.ignore();
+
+        for (int idx : matches) {
+            if (trains[idx].getTrainNumber() == num) {
+                if (trains[idx].bookSeats(seatCount)) {
+                    cout << "Успішно заброньовано " << seatCount << " місць!\n";
+                } else {
+                    cout << "Недостатньо вільних місць.\n";
+                }
+                return;
+            }
+        }
+
+        cout << "Потяг з таким номером не знайдено серед запропонованих.\n";
+    }
+};
+
+// ===== Основна програма =====
+
+void createAccount(Account& acc) {
+    cout << "\n------Створення нового акаунту------\n";
+    cout << "Введіть своє ім'я користувача: ";
+    getline(cin, acc.username);
+    cout << "Введіть свій пароль: ";
+    getline(cin, acc.password);
+    cout << "Введіть своє ім'я: ";
+    getline(cin, acc.name);
+    cout << "Введіть свою електронну адресу: ";
+    getline(cin, acc.email);
+    cout << "Введіть свій номер телефону: ";
+    getline(cin, acc.phone);
+    cout << "\nАкаунт успішно створено!\n";
+    acc.loggedIn = true;
+}
+
+void login(Account& acc) {
+    string uname, pass;
+    cout << "\n------Вхід------\n";
+    cout << "Ім'я користувача: ";
+    getline(cin, uname);
+    cout << "Пароль: ";
+    getline(cin, pass);
+
+    if (uname == acc.username && pass == acc.password) {
+        cout << "Успішний вхід!\n";
+        acc.loggedIn = true;
+    } else {
+        cout << "Невірні дані для входу.\n";
+    }
+}
+
+void viewAccountInfo(const Account& acc) {
+    if (!acc.loggedIn) {
+        cout << "Увійдіть, щоб переглянути інформацію.\n";
+        return;
+    }
+    cout << "\n------Інформація про акаунт------\n";
+    cout << "Ім'я: " << acc.name << "\n";
+    cout << "Електронна адреса: " << acc.email << "\n";
+    cout << "Телефон: " << acc.phone << "\n";
+}
+
+void menu() {
+    cout << "\n----------------Меню----------------\n";
+    cout << "1. Створити акаунт\n";
+    cout << "2. Увійти\n";
+    cout << "3. Переглянути інформацію про акаунт\n";
+    cout << "4. Переглянути поточні замовлення\n";
+    cout << "5. Відобразити всі доступні потяги\n";
+    cout << "6. Пошук і бронювання потяга\n";
+    cout << "7. Вихід\n";
+    cout << "------------------------------------\n";
+    cout << "Оберіть пункт меню: ";
+}
+
+int main() {
+    system("chcp 65001");
+    Account user;
+    TrainManager manager;
+
+    int choice;
+    while (true) {
+        menu();
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1:
+                createAccount(user);
+                break;
+            case 2:
+                login(user);
+                break;
+            case 3:
+                viewAccountInfo(user);
+                break;
+            case 4:
+                if (user.loggedIn) {
+                    manager.displayAvailableTrains();
+                } else {
+                    cout << "Спочатку увійдіть у акаунт.\n";
+                }
+                break;
+            case 5:
+                manager.displayAllTrains();
+                break;
+            case 6:
+                if (user.loggedIn) {
+                    string dest;
+                    cout << "Введіть напрямок для пошуку: ";
+                    getline(cin, dest);
+                    manager.bookTrain(dest);
+                } else {
+                    cout << "Спочатку увійдіть у акаунт.\n";
+                }
+                break;
+            case 7:
+                cout << "До побачення!\n";
+                return 0;
+            default:
+                cout << "Невірний вибір. Спробуйте ще раз.\n";
+        }
+    }
+
+    return 0;
+}
